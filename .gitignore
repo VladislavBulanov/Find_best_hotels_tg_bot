@@ -110,6 +110,7 @@ ENV/
 env.bak/
 venv.bak/
 tg_bot/
+draft_webinar/
 
 # Spyder project settings
 .spyderproject
