@@ -16,6 +16,9 @@ def get_offers(
     checkout_date: datetime.date,
     guests_amount: int,
     results_amount: int,
+    min_price: int,
+    max_price: int,
+    sort_type: str,
 ) -> Union[List[dict], str]:
     """
     A function retrieves data with available hotels by specified filters.
@@ -24,6 +27,9 @@ def get_offers(
     :param checkout_date: the check-out date
     :param guests_amount: the amount of the guests
     :param results_amount: the amount of the results to show
+    :param min_price: the minimum price of the room per day
+    :param max_price: the maximum price of the room per day
+    :param sort_type: the type of sorting results
     :returns: the list with properties or the error message
     """
 
@@ -46,8 +52,8 @@ def get_offers(
         "rooms": [{"adults": guests_amount, "children": []}],
         "resultsStartingIndex": 0,
         "resultsSize": results_amount,
-        "sort": "PRICE_LOW_TO_HIGH",
-        "filters": {"price": {"max": 200, "min": 25}},
+        "sort": sort_type,
+        "filters": {"price": {"max": max_price, "min": min_price}},
     }
 
     headers = {
