@@ -13,6 +13,8 @@ class UserChoice:
         checkout_date: datetime.date = None,
         guests_amount: int = None,
         results_amount: int = None,
+        min_price: int = 25,
+        max_price: int = 10000,
     ) -> None:
         """
         The class constructor.
@@ -21,6 +23,8 @@ class UserChoice:
         :param checkout_date: the date of check-out at the hotel
         :param guests_amount: the quantity of guests
         :param results_amount: the quantity of results to show
+        :param min_price: the minimum price of the room per day
+        :param max_price: the maximum price of the room per day
         """
 
         self.city_id = city_id
@@ -28,3 +32,5 @@ class UserChoice:
         self.checkout_date = checkout_date
         self.guests_amount = guests_amount
         self.results_amount = results_amount
+        self.min_price = min_price
+        self.max_price = max_price
