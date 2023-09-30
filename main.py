@@ -2,8 +2,8 @@
 
 import logging
 
-from loader import bot
 import handlers
+from loader import bot
 from utils.set_bot_commands import set_default_commands
 
 logger = logging.getLogger("main")

@@ -1,9 +1,1 @@
-from . import (
-    start,
-    help,
-    low,
-    high,
-    custom,
-    history,
-    echo,
-)
+from . import custom, echo, help, high, history, low, start

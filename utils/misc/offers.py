@@ -1,7 +1,7 @@
 # A module for retrieving data with available hotels by specified filters.
 
 from datetime import datetime
-from typing import Union, List
+from typing import List, Union
 
 import requests
 from requests.exceptions import JSONDecodeError

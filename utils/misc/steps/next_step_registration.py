@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from logging import Logger
-from typing import Union, Callable
+from typing import Callable, Union
 
 from telebot import TeleBot
 

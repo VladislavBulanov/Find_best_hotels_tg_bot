@@ -9,14 +9,17 @@ from main import logger
 from states.user_choice import UserChoice
 from utils.misc.city_info import get_city_info
 from utils.misc.hotel_info import get_hotel_info
-from utils.misc.steps.next_step_registration import (
-    check_validation_result_and_register_next_step,
-)
 from utils.misc.offers import get_offers
-from utils.misc.validations.validation_checkin_date import validate_checkin_date
-from utils.misc.validations.validation_checkout_date import validate_checkout_date
-from utils.misc.validations.validation_guests_amount import validate_guests_amount
-from utils.misc.validations.validation_results_amount import validate_results_amount
+from utils.misc.steps.next_step_registration import \
+    check_validation_result_and_register_next_step
+from utils.misc.validations.validation_checkin_date import \
+    validate_checkin_date
+from utils.misc.validations.validation_checkout_date import \
+    validate_checkout_date
+from utils.misc.validations.validation_guests_amount import \
+    validate_guests_amount
+from utils.misc.validations.validation_results_amount import \
+    validate_results_amount
 
 USER_CHOICE = UserChoice()  # A 'UserChoice' class instance,
 # which consists of chosen parameters by user like city, dates, etc.

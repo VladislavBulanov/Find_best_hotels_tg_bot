@@ -1,7 +1,6 @@
 from telebot.types import Message
 
 from loader import bot
-
 from main import logger
 
 
