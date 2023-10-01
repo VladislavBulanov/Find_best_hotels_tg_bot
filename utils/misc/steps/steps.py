@@ -18,6 +18,10 @@ from utils.misc.validations.validation_checkout_date import \
     validate_checkout_date
 from utils.misc.validations.validation_guests_amount import \
     validate_guests_amount
+from utils.misc.validations.validation_maximum_price import \
+    validate_maximum_price
+from utils.misc.validations.validation_minimum_price import \
+    validate_minimum_price
 from utils.misc.validations.validation_results_amount import \
     validate_results_amount
 
@@ -40,7 +44,9 @@ def run_command(
     def request_city_and_country(message: Message) -> None:
         """A function requests the user for the city and the country."""
 
-        logger.info(f"The command '/{command}' is launched by {message.from_user.full_name}")
+        logger.info(
+            f"The command '/{command}' is launched by {message.from_user.full_name}"
+        )
 
         # Send message to user for request city and country:
         msg = bot.send_message(
@@ -94,13 +100,100 @@ def run_command(
             src_logger=logger,
             src_bot=bot,
             not_success_function=validate_checkin_date_and_request_checkout_date,
-            success_function=validate_checkout_date_and_request_guests_amount,
+            success_function=(
+                validate_checkout_date_and_request_min_price
+                if command == "custom"
+                else validate_checkout_date_and_request_guests_amount
+            ),
             success_message="Введите желаемую дату выселения (в формате ДД.ММ.ГГ):",
         )
 
         if result:
             USER_CHOICE.checkin_date = result
             logger.info(f"Check-in date: {USER_CHOICE.checkin_date}")
+
+    def validate_checkout_date_and_request_min_price(message: Message) -> None:
+        """A function validates check-out date,
+        records it if date is valid or requests date again,
+        and requests the minimum price."""
+
+        logger.info(f"{message.from_user.full_name}'s message: {message.text}")
+
+        # Validate check-out date:
+        checkout_date = validate_checkout_date(
+            src_checkout_date=message.text,
+            src_checkin_date=USER_CHOICE.checkin_date,
+        )
+
+        result = check_validation_result_and_register_next_step(
+            chat_id=message.chat.id,
+            validation_result_object=checkout_date,
+            type_of_validation="date",
+            src_logger=logger,
+            src_bot=bot,
+            not_success_function=validate_checkout_date_and_request_min_price,
+            success_function=validate_min_price_and_request_max_price,
+            success_message="Введите минимальную стоимость номера (в долларах):",
+        )
+
+        if result:
+            USER_CHOICE.checkout_date = result
+            logger.info(f"Check-out date: {USER_CHOICE.checkout_date}")
+
+    def validate_min_price_and_request_max_price(message: Message) -> None:
+        """A function validates minimum price,
+        records it if price is valid or requests price again,
+        and requests the maximum price."""
+
+        logger.info(f"{message.from_user.full_name}'s message: {message.text}")
+
+        # Validate the minimum price:
+        min_price = message.text
+        validation_result = validate_minimum_price(amount_value=min_price)
+
+        result = check_validation_result_and_register_next_step(
+            chat_id=message.chat.id,
+            validation_result_object=validation_result,
+            type_of_validation="integer",
+            src_logger=logger,
+            src_bot=bot,
+            not_success_function=validate_min_price_and_request_max_price,
+            success_function=validate_max_price_and_request_guests_amount,
+            success_message="Введите максимальную стоимость номера (в долларах):",
+        )
+
+        if result:
+            USER_CHOICE.min_price = int(min_price)
+            logger.info(f"Minimum price: {USER_CHOICE.min_price}")
+
+    def validate_max_price_and_request_guests_amount(message: Message) -> None:
+        """A function validates maximum price,
+        records it if price is valid or requests price again,
+        and requests the amount of guests."""
+
+        logger.info(f"{message.from_user.full_name}'s message: {message.text}")
+
+        # Validate the maximum price:
+        max_price = message.text
+        validation_result = validate_maximum_price(
+            amount_value=max_price,
+            min_price=USER_CHOICE.min_price,
+        )
+
+        result = check_validation_result_and_register_next_step(
+            chat_id=message.chat.id,
+            validation_result_object=validation_result,
+            type_of_validation="integer",
+            src_logger=logger,
+            src_bot=bot,
+            not_success_function=validate_max_price_and_request_guests_amount,
+            success_function=validate_guests_amount_and_request_results_amount,
+            success_message="Введите количество гостей:",
+        )
+
+        if result:
+            USER_CHOICE.max_price = int(max_price)
+            logger.info(f"Maximum price: {USER_CHOICE.max_price}")
 
     def validate_checkout_date_and_request_guests_amount(message: Message) -> None:
         """A function validates check-out date,
