@@ -1,6 +1,6 @@
 # A module with function for validate check-out date.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Union
 
 
@@ -26,9 +26,17 @@ def validate_checkout_date(
                 "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
             )
 
+        if checkout_date > datetime.now().date() + timedelta(days=366):
+            return (
+                "Бронирование отелей доступно в пределах "
+                "календарного года от текущей даты. "
+                "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
+            )
+
         return checkout_date
 
     except ValueError:
         return (
-            "Некорректный формат даты. " "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
+            "Некорректный формат даты. "
+            "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
         )

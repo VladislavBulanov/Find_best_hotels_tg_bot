@@ -1,6 +1,6 @@
 # A module with function for validate check-in date.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Union
 
 
@@ -22,9 +22,17 @@ def validate_checkin_date(src_date: str) -> Union[datetime.date, str]:
                 "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
             )
 
+        if checkin_date > datetime.now().date() + timedelta(days=365):
+            return (
+                "Бронирование отелей доступно в пределах "
+                "календарного года от текущей даты. "
+                "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
+            )
+
         return checkin_date
 
     except ValueError:
         return (
-            "Некорректный формат даты. " "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
+            "Некорректный формат даты. "
+            "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
         )

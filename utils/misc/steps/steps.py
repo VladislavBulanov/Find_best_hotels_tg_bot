@@ -1,12 +1,14 @@
 # A module with functions which describe the working of program at each step.
 
+from datetime import datetime
 from typing import List, Union
 
 from telebot.types import Message
 
+from database.models import Requests, session
 from loader import bot
 from main import logger
-from states.user_choice import UserChoice
+from states.user_parameters import UserParameters
 from utils.misc.city_info import get_city_info
 from utils.misc.hotel_info import get_hotel_info
 from utils.misc.offers import get_offers
@@ -25,10 +27,6 @@ from utils.misc.validations.validation_minimum_price import \
 from utils.misc.validations.validation_results_amount import \
     validate_results_amount
 
-USER_CHOICE = UserChoice()  # A 'UserChoice' class instance,
-# which consists of chosen parameters by user like city, dates, etc.
-# for send request to get suitable proposal of hotels
-
 
 def run_command(
     command_name: str,
@@ -45,7 +43,7 @@ def run_command(
         """A function requests the user for the city and the country."""
 
         logger.info(
-            f"The command '/{command}' is launched by {message.from_user.full_name}"
+            f"The command '/{user_params.command}' is launched by {user_params.user_name}"
         )
 
         # Send message to user for request city and country:
@@ -80,8 +78,9 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.city_id = result
-            logger.info(f"City ID: {USER_CHOICE.city_id}")
+            user_params.city_name = message.text
+            user_params.city_id = result
+            logger.info(f"City ID: {user_params.city_id}")
 
     def validate_checkin_date_and_request_checkout_date(message: Message) -> None:
         """A function validates check-in date,
@@ -102,15 +101,15 @@ def run_command(
             not_success_function=validate_checkin_date_and_request_checkout_date,
             success_function=(
                 validate_checkout_date_and_request_min_price
-                if command == "custom"
+                if user_params.command == "custom"
                 else validate_checkout_date_and_request_guests_amount
             ),
             success_message="Введите желаемую дату выселения (в формате ДД.ММ.ГГ):",
         )
 
         if result:
-            USER_CHOICE.checkin_date = result
-            logger.info(f"Check-in date: {USER_CHOICE.checkin_date}")
+            user_params.checkin_date = result
+            logger.info(f"Check-in date: {user_params.checkin_date}")
 
     def validate_checkout_date_and_request_min_price(message: Message) -> None:
         """A function validates check-out date,
@@ -122,7 +121,7 @@ def run_command(
         # Validate check-out date:
         checkout_date = validate_checkout_date(
             src_checkout_date=message.text,
-            src_checkin_date=USER_CHOICE.checkin_date,
+            src_checkin_date=user_params.checkin_date,
         )
 
         result = check_validation_result_and_register_next_step(
@@ -137,8 +136,8 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.checkout_date = result
-            logger.info(f"Check-out date: {USER_CHOICE.checkout_date}")
+            user_params.checkout_date = result
+            logger.info(f"Check-out date: {user_params.checkout_date}")
 
     def validate_min_price_and_request_max_price(message: Message) -> None:
         """A function validates minimum price,
@@ -163,8 +162,8 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.min_price = int(min_price)
-            logger.info(f"Minimum price: {USER_CHOICE.min_price}")
+            user_params.min_price = int(min_price)
+            logger.info(f"Minimum price: {user_params.min_price}")
 
     def validate_max_price_and_request_guests_amount(message: Message) -> None:
         """A function validates maximum price,
@@ -177,7 +176,7 @@ def run_command(
         max_price = message.text
         validation_result = validate_maximum_price(
             amount_value=max_price,
-            min_price=USER_CHOICE.min_price,
+            min_price=user_params.min_price,
         )
 
         result = check_validation_result_and_register_next_step(
@@ -192,8 +191,8 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.max_price = int(max_price)
-            logger.info(f"Maximum price: {USER_CHOICE.max_price}")
+            user_params.max_price = int(max_price)
+            logger.info(f"Maximum price: {user_params.max_price}")
 
     def validate_checkout_date_and_request_guests_amount(message: Message) -> None:
         """A function validates check-out date,
@@ -205,7 +204,7 @@ def run_command(
         # Validate check-out date:
         checkout_date = validate_checkout_date(
             src_checkout_date=message.text,
-            src_checkin_date=USER_CHOICE.checkin_date,
+            src_checkin_date=user_params.checkin_date,
         )
 
         result = check_validation_result_and_register_next_step(
@@ -220,8 +219,8 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.checkout_date = result
-            logger.info(f"Check-out date: {USER_CHOICE.checkout_date}")
+            user_params.checkout_date = result
+            logger.info(f"Check-out date: {user_params.checkout_date}")
 
     def validate_guests_amount_and_request_results_amount(message: Message) -> None:
         """A function validates the amount of guests,
@@ -246,8 +245,8 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.guests_amount = int(guests_amount)
-            logger.info(f"Guests amount: {USER_CHOICE.guests_amount}")
+            user_params.guests_amount = int(guests_amount)
+            logger.info(f"Guests amount: {user_params.guests_amount}")
 
     def validate_results_amount_and_get_results(message: Message) -> None:
         """A function validates the amount of results,
@@ -273,20 +272,38 @@ def run_command(
         )
 
         if result:
-            USER_CHOICE.results_amount = int(results_amount)
-            logger.info(f"Results amount: {USER_CHOICE.results_amount}")
+            user_params.results_amount = int(results_amount)
+            logger.info(f"Results amount: {user_params.results_amount}")
 
             # Make HTTP request and retrieve data with results:
             data: Union[List[dict], str] = get_offers(
-                city_id=USER_CHOICE.city_id,
-                checkin_date=USER_CHOICE.checkin_date,
-                checkout_date=USER_CHOICE.checkout_date,
-                guests_amount=USER_CHOICE.guests_amount,
-                results_amount=USER_CHOICE.results_amount,
-                min_price=USER_CHOICE.min_price,
-                max_price=USER_CHOICE.max_price,
-                sort_type="PRICE_LOW_TO_HIGH" if command == "low" else "PRICE_RELEVANT",
+                city_id=user_params.city_id,
+                checkin_date=user_params.checkin_date,
+                checkout_date=user_params.checkout_date,
+                guests_amount=user_params.guests_amount,
+                results_amount=user_params.results_amount,
+                min_price=user_params.min_price,
+                max_price=user_params.max_price,
+                sort_type="PRICE_LOW_TO_HIGH"
+                if user_params.command == "low"
+                else "PRICE_RELEVANT",
             )
+
+            # Make record in the source DB about current request:
+            new_record = Requests(
+                user_name=user_params.user_name,
+                request_datetime=datetime.now(),
+                command=user_params.command,
+                city=user_params.city_name,
+                checkin_date=user_params.checkin_date,
+                checkout_date=user_params.checkout_date,
+                min_price=user_params.min_price,
+                max_price=user_params.max_price,
+                guests_qty=user_params.guests_amount,
+                results_qty=user_params.results_amount,
+            )
+            session.add(new_record)
+            session.commit()
 
             # Show the results or the error message:
             if isinstance(data, List):
@@ -302,14 +319,12 @@ def run_command(
                         )
                         qty += 1
                     logger.info(f"The {qty} results are shown")
-                    logger.info(f"The command '/{command}' is completed")
                 else:
                     bot.send_message(
                         message.chat.id,
                         "По Вашему запросу не найдено ни одного варианта",
                     )
                     logger.info("No matches")
-                    logger.info(f"The command '/{command}' is completed")
 
             # Show error message:
             else:
@@ -318,7 +333,13 @@ def run_command(
                     data,
                 )
                 logger.error(f"Error: {data}")
-                logger.info(f"The command '/{command}' is completed")
 
-    command = command_name
+            logger.info(f"The command '/{user_params.command}' is completed")
+
+    user_params = UserParameters()  # A 'UserParameters' class instance,
+    # which consists of chosen parameters by user like city, dates, etc.
+    # for send request to get suitable proposal of hotels
+
+    user_params.user_name = src_message.from_user.full_name
+    user_params.command = command_name
     request_city_and_country(src_message)
