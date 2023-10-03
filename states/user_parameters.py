@@ -3,11 +3,14 @@
 from datetime import datetime
 
 
-class UserChoice:
+class UserParameters:
     """A class for record parameters chosen by user."""
 
     def __init__(
         self,
+        user_name: str = None,
+        command: str = None,
+        city_name: str = None,
         city_id: str = None,
         checkin_date: datetime.date = None,
         checkout_date: datetime.date = None,
@@ -18,6 +21,9 @@ class UserChoice:
     ) -> None:
         """
         The class constructor.
+        :param user_name: the name of user in Telegram
+        :param command: the chosen bot command
+        :param city_name: the chosen city
         :param city_id: the ID of chosen city
         :param checkin_date: the date of check-in at the hotel
         :param checkout_date: the date of check-out at the hotel
@@ -27,6 +33,9 @@ class UserChoice:
         :param max_price: the maximum price of the room per day
         """
 
+        self.user_name = user_name
+        self.command = command
+        self.city_name = city_name
         self.city_id = city_id
         self.checkin_date = checkin_date
         self.checkout_date = checkout_date
