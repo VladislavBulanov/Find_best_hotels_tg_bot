@@ -33,6 +33,5 @@ def validate_checkin_date(src_date: str) -> Union[datetime.date, str]:
 
     except ValueError:
         return (
-            "Некорректный формат даты. "
-            "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
+            "Некорректный формат даты. " "Пожалуйста, введите дату в формате ДД.ММ.ГГ:"
         )

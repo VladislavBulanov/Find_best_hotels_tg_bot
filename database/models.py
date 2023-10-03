@@ -11,9 +11,7 @@ engine = create_engine("sqlite:///database/requests_history.db")
 Session = sessionmaker(bind=engine)
 session = Session()
 Base = declarative_base()
-commands: Dict[str, str] = {
-    command[0]: command[1] for command in DEFAULT_COMMANDS
-}
+commands: Dict[str, str] = {command[0]: command[1] for command in DEFAULT_COMMANDS}
 
 
 class Requests(Base):

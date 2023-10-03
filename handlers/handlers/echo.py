@@ -10,9 +10,7 @@ from main import logger
 def run_command_echo(message: Message) -> None:
     """A function launches a '/echo' command."""
 
-    logger.info(
-        f"The function 'echo' is called by {message.from_user.full_name}"
-    )
+    logger.info(f"The function 'echo' is called by {message.from_user.full_name}")
     bot.reply_to(
         message,
         "Простите, я не понял Вас. "

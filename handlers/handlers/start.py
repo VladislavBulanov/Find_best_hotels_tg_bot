@@ -10,9 +10,7 @@ from main import logger
 def run_command_start(message: Message) -> None:
     """A function launches a '/start' command."""
 
-    logger.info(
-        f"The command '/start' is called by {message.from_user.full_name}"
-    )
+    logger.info(f"The command '/start' is called by {message.from_user.full_name}")
     bot.reply_to(
         message,
         f"Привет, {message.from_user.full_name}!\n"
